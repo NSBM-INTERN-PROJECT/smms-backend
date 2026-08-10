@@ -126,6 +126,28 @@
     </dependencyManagement>
 
     <!-- ─────────────────────────────────────────────────────────
+         COMMON DEPENDENCIES — inherited by EVERY child module
+         Keep this list minimal — service-specific deps go in
+         each service's own pom.xml, not here.
+    ───────────────────────────────────────────────────────────── -->
+    <dependencies>
+        <!-- Lombok — boilerplate reduction (MIT) -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <!-- JUnit 5 + Mockito — testing (MIT / Apache 2.0) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+
+    
+    <!-- ─────────────────────────────────────────────────────────
          BUILD — plugin configuration inherited by all modules
     ───────────────────────────────────────────────────────────── -->
     <build>
