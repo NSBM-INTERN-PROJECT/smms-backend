@@ -1,1 +1,36 @@
-/target
+# ─── SECRETS ─────────────────────────────────────────
+.env
+.env.*
+!.env.example
+application-local.yml
+application-local.properties
+application-secrets.yml
+
+# ─── JAVA / MAVEN ────────────────────────────────────
+target/
+*.class
+*.jar
+*.war
+*.ear
+*.nar
+hs_err_pid*
+.mvn/wrapper/maven-wrapper.jar
+
+# ─── IDE ─────────────────────────────────────────────
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+.vscode/
+*.code-workspace
+
+# ─── DOCKER ──────────────────────────────────────────
+docker-compose.override.yml
+
+# ─── OS ──────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+*.log
+*.tmp
+*.swp
