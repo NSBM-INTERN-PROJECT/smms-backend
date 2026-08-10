@@ -1,0 +1,138 @@
+version: '3.8'
+
+# IMPORTANT: All secrets are read from .env file (gitignored).
+# Copy .env.example to .env and fill in real values before running.
+# NEVER hardcode credentials in this file.
+services:
+  mysql:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASS}
+    ports: ["${DB_PORT:-3306}:3306"]
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    env_file: .env
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  discovery-server:
+    build: ./discovery-server
+    ports: ["${DISCOVERY_PORT:-8761}:8761"]
+    env_file: .env
+    depends_on:
+      mysql: {condition: service_healthy}
+
+  config-server:
+    build: ./config-server
+    ports: ["${CONFIG_PORT:-8888}:8888"]
+    env_file: .env
+    depends_on: [discovery-server]
+
+  api-gateway:
+    build: ./api-gateway
+    ports: ["${GATEWAY_PORT:-8080}:8080"]
+    environment:
+      JWT_SECRET: ${JWT_SECRET}
+      GATEWAY_PORT: ${GATEWAY_PORT:-8080}
+    env_file: .env
+    depends_on: [discovery-server, config-server]
+
+  auth-service:
+    # auth-service sends OTP emails AND handles JWT — needs DB + SMTP + OTP env vars
+    build: ./auth-service
+    ports: ["${AUTH_PORT:-8081}:8081"]
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_USER: ${DB_USER}
+      DB_PASS: ${DB_PASS}
+      JWT_SECRET: ${JWT_SECRET}
+      GMAIL_USERNAME: ${GMAIL_USERNAME}
+      GMAIL_APP_PASSWORD: ${GMAIL_APP_PASSWORD}
+      OTP_EXPIRY_MINUTES: ${OTP_EXPIRY_MINUTES:-5}
+      OTP_MAX_ATTEMPTS: ${OTP_MAX_ATTEMPTS:-3}
+      OTP_RESEND_COOLDOWN_SECONDS: ${OTP_RESEND_COOLDOWN_SECONDS:-60}
+      AUTH_PORT: ${AUTH_PORT:-8081}
+    env_file: .env
+    depends_on:
+      mysql: {condition: service_healthy}
+      discovery-server: {condition: service_started}
+
+  user-service:
+    build: ./user-service
+    ports: ["${USER_PORT:-8082}:8082"]
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_USER: ${DB_USER}
+      DB_PASS: ${DB_PASS}
+      USER_PORT: ${USER_PORT:-8082}
+    env_file: .env
+    depends_on:
+      mysql: {condition: service_healthy}
+      discovery-server: {condition: service_started}
+
+  allocation-service:
+    build: ./allocation-service
+    ports: ["${ALLOC_PORT:-8083}:8083"]
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_USER: ${DB_USER}
+      DB_PASS: ${DB_PASS}
+      ALLOC_PORT: ${ALLOC_PORT:-8083}
+    env_file: .env
+    depends_on: [mysql, user-service]
+
+  meeting-service:
+    # meeting-service sends meeting reminder emails via SMTP
+    build: ./meeting-service
+    ports: ["${MEETING_PORT:-8084}:8084"]
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_USER: ${DB_USER}
+      DB_PASS: ${DB_PASS}
+      GMAIL_USERNAME: ${GMAIL_USERNAME}
+      GMAIL_APP_PASSWORD: ${GMAIL_APP_PASSWORD}
+      MEETING_PORT: ${MEETING_PORT:-8084}
+    env_file: .env
+    depends_on: [mysql, allocation-service]
+
+  session-service:
+    build: ./session-service
+    ports: ["${SESSION_PORT:-8085}:8085"]
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_USER: ${DB_USER}
+      DB_PASS: ${DB_PASS}
+      SESSION_PORT: ${SESSION_PORT:-8085}
+    env_file: .env
+    depends_on: [mysql, meeting-service]
+
+  report-service:
+    build: ./report-service
+    ports: ["${REPORT_PORT:-8086}:8086"]
+    environment:
+      REPORT_PORT: ${REPORT_PORT:-8086}
+    env_file: .env
+    depends_on: [user-service, allocation-service, meeting-service, session-service]
+
+  # NOTE: smms-frontend lives in a SEPARATE GitHub repository (smms-frontend).
+  # For production: Vercel auto-deploys from smms-frontend/main (no Docker needed).
+  # For local dev: cd ../smms-frontend && npm run dev  (port 5173)
+  # The block below is optional for local full-stack Docker testing only.
+  # frontend:
+  #   build: ../smms-frontend   # adjust path to where you cloned smms-frontend
+  #   ports: ["80:80"]
+  #   depends_on: [api-gateway]
+
+volumes:
+  mysql_data:
