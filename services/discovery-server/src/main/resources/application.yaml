@@ -6,10 +6,10 @@ spring:
   application:
     name: discovery-server
 
-  security: 
-    user:
-      name: ${EUREKA_USER:admin}
-      password: ${EUREKA_PASSWORD:admin123}
+#  security: 
+#    user:
+#      name: ${EUREKA_USER:admin}
+#      password: ${EUREKA_PASSWORD:admin123}
       
 eureka:
 
@@ -20,7 +20,8 @@ eureka:
     register-with-eureka: false
     fetch-registry: false
     service-url:
-      defaultZone: http://${EUREKA_USER}:${EUREKA_PASSWORD}@${eureka.instance.hostname}:${server.port}/eureka/
+      defaultZone: http://localhost:${DISCOVERY_PORT:8761}/eureka/
+#      defaultZone: http://${EUREKA_USER}:${EUREKA_PASSWORD}@${eureka.instance.hostname}:${server.port}/eureka/
   
   server:
     wait-time-in-ms-when-sync-empty: 0
