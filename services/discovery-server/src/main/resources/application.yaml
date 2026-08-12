@@ -2,5 +2,29 @@ server:
   port: ${DISCOVERY_PORT:8761}
 
 spring:
+
   application:
     name: discovery-server
+
+  security: 
+    user:
+      name: ${EUREKA_USER:admin}
+      password: ${EUREKA_PASSWORD:admin123}
+      
+eureka:
+
+  instance:
+    hostname: localhost
+
+  client:
+    register-with-eureka: false
+    fetch-registry: false
+    service-url:
+      defaultZone: http://${EUREKA_USER}:${EUREKA_PASSWORD}@${eureka.instance.hostname}:${server.port}/eureka/
+  
+  server:
+    wait-time-in-ms-when-sync-empty: 0
+    # Wait 5 minutes before evicting instances in dev (avoids false alarms)
+    eviction-interval-timer-in-ms: 5000
+    enable-self-preservation: false
+
