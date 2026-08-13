@@ -2,8 +2,21 @@ server:
   port: ${CONFIG_PORT:8888}
 
 spring:
+
   application:
     name: config-server
+  
+  #config server will use the native profile to read configuration files from the classpath
+  profiles:
+    active: native
+
+  #Location where the config server will look for configuration files
+  cloud:
+    config:
+      server:
+        native:
+          # Config files location — inside the JAR classpath
+          search-locations: classpath:/config
 
 management:
   endpoints:
