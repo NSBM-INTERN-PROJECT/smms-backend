@@ -9,12 +9,14 @@ on:
       - ["service/api-gateway"]
     paths:
       - "services/api-gateway/**"
+      - "pom.xml"
 
   pull_request:
     branches:
       - ["dev"]
     paths:
       - "services/api-gateway/**"
+      - "pom.xml"
 
 jobs:
 
