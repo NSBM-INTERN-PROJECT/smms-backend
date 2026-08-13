@@ -6,14 +6,14 @@ name: api-gateway-build-check-pipeline
 on:
   push:
     branches:
-      - ["service/api-gateway"]
+      - "service/api-gateway"
     paths:
       - "services/api-gateway/**"
       - "pom.xml"
 
   pull_request:
     branches:
-      - ["dev"]
+      - "dev"
     paths:
       - "services/api-gateway/**"
       - "pom.xml"
