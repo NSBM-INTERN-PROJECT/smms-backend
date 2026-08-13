@@ -54,6 +54,16 @@ spring:
         uri: lb://report-service
         predicates:
           - Path=/api/v1/reports/**
+          
+eureka:
+  client:
+    service-url:
+      defaultZone: http://discovery-server:${DISCOVERY_PORT:8761}/eureka/
+  instance:
+    prefer-ip-address: true
+    lease-renewal-interval-in-seconds: 10
+    lease-expiration-duration-in-seconds: 30
+
 management:
   endpoints:
     web:
@@ -64,6 +74,7 @@ management:
       show-details: always
     gateway:
       enabled: true
+
 logging:
   level:
     org.springframework.cloud.gateway: INFO
