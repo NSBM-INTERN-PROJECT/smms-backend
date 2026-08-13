@@ -18,6 +18,15 @@ spring:
           # Config files location — inside the JAR classpath
           search-locations: classpath:/config
 
+eureka:
+  client:
+    service-url:
+      defaultZone: http://discovery-server:${DISCOVERY_PORT:8761}/eureka/
+  instance:
+    prefer-ip-address: true
+    lease-renewal-interval-in-seconds: 10
+    lease-expiration-duration-in-seconds: 30
+    
 management:
   endpoints:
     web:
