@@ -41,10 +41,10 @@ jobs:
         run: ls -la
 
       - name: Build meeting-service (skip tests for speed)
-        run: mvn clean install -pl meeting-service -am -DskipTests --no-transfer-progress
+        run: mvn clean install -pl services/meeting-service -am -DskipTests --no-transfer-progress
 
       - name: Run unit tests
-        run: mvn test -pl meeting-service --no-transfer-progress
+        run: mvn test -pl services/meeting-service --no-transfer-progress
         continue-on-error: true   # Don't fail build if tests fail during early development
 
       - name: Report build status
