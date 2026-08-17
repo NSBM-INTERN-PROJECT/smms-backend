@@ -29,15 +29,15 @@
          MODULES — all 9 services declared here
     ───────────────────────────────────────────────────────────── -->
     <modules>
-        <module>services/discovery-server</module>
-        <module>services/config-server</module>
-        <module>services/api-gateway</module>
-        <module>services/auth-service</module>
-        <module>services/user-service</module>
-        <module>services/allocation-service</module>
-        <module>services/meeting-service</module>
-        <module>services/session-service</module>
-        <module>services/report-service</module>
+        <module>discovery-server</module>
+        <module>config-server</module>
+        <module>api-gateway</module>
+        <module>auth-service</module>
+        <module>user-service</module>
+        <module>allocation-service</module>
+        <module>meeting-service</module>
+        <module>session-service</module>
+        <module>report-service</module>
     </modules>
 
     <!-- ─────────────────────────────────────────────────────────

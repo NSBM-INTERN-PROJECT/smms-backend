@@ -1,0 +1,36 @@
+server:
+  port: 8083 # Allocation service eke port eka
+
+spring:
+  application:
+    name: allocation-service
+
+  # Database Connection (MySQL)
+  datasource:
+    url: jdbc:mysql://localhost:3307/smms_db?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    username: smms_user
+    password: password123
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  # Hibernate / JPA Settings
+  jpa:
+    hibernate:
+      ddl-auto: update # Entities haduwama auto tables create wenna meka update karanawa
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+
+  # Flyway Migration (Danata disable karala thiyamu, database tables fix unata passe on karanna puluwan)
+  flyway:
+    enabled: false
+
+# Eureka Discovery Server Connection
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+    fetch-registry: true
+    register-with-eureka: true
+  instance:
+    prefer-ip-address: true
