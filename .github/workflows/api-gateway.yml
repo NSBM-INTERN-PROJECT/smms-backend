@@ -44,13 +44,13 @@ jobs:
       - name: see files
         run: ls -la
 
-      - name: Build & Test Application Service
-        run: ./mvnw clean test -pl services/api-gateway -am
+      - name: Build & Test api-gateway Service
+        run: ./mvnw clean test -f services/api-gateway -am
 
-      - name: Package Application Service
-        run: ./mvnw package -DskipTests -pl services/api-gateway -am
+      - name: Package api-gateway Service
+        run: ./mvnw package -DskipTests -f services/api-gateway -am
 
-      - name: Upload Application Service Artifact
+      - name: Upload api-gateway Service Artifact
         uses: actions/upload-artifact@v4
         with:
           name: api-gateway-jar
