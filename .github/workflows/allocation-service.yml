@@ -36,16 +36,24 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      #to see what files are in the project folder
+      - name: Give Permissions to Maven in ubuntu
+        run: chmod +x mvnw
+
+      #      to see what files are in the project folder
       - name: see files
         run: ls -la
 
-      - name: Build allocation-service (skip tests for speed)
-        run: mvn clean install -pl services/allocation-service -am -DskipTests --no-transfer-progress
+      - name: Build & Test allocation Service
+        run: ./mvnw clean test -f services/allocation-service -am
 
-      - name: Run unit tests
-        run: mvn test -pl services/allocation-service --no-transfer-progress
-        continue-on-error: true   # Don't fail build if tests fail during early development
+      - name: Package allocation Service
+        run: ./mvnw package -DskipTests -f services/allocation-service -am
+
+      - name: Upload allocation Service Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: allocation-service-jar
+          path: services/allocation-service/target/*.jar
 
       - name: Report build status
         if: always()
