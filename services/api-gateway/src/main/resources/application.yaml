@@ -1,0 +1,82 @@
+server:
+  port: ${GATEWAY_PORT:8080}
+  
+spring:
+  application:
+    name: api-gateway
+
+  cloud:   
+    # ─── ROUTES ────────────────────────────────────────────
+    # lb:// prefix = Spring Cloud LoadBalancer resolves the
+    # service name from Eureka and applies round-robin LB.
+    routes:
+
+      # Auth Service — public endpoints (no JWT required)
+      - id: auth-service
+        uri: lb://auth-service
+        predicates:
+          - Path=/api/v1/auth/**
+
+      # User Service — profiles, student forms, approval workflow
+      - id: user-service
+        uri: lb://user-service
+        predicates:
+          - Path=/api/v1/users/**
+
+      # Allocation Service — mentor-student assignments
+      - id: allocation-service
+        uri: lb://allocation-service
+        predicates:
+          - Path=/api/v1/allocations/**
+
+      # Meeting Service — slots, meetings, requests, notifications
+      - id: meeting-service
+        uri: lb://meeting-service
+        predicates:
+          - Path=/api/v1/meetings/**
+
+      # Session Service — session notes and escalations
+      - id: session-service-notes
+        uri: lb://session-service
+        predicates:
+          - Path=/api/v1/sessions/**
+      - id: session-service-escalations
+        uri: lb://session-service
+        predicates:
+          - Path=/api/v1/escalations/**
+
+      # Report Service — dashboards, exports
+      - id: report-service-dashboard
+        uri: lb://report-service
+        predicates:
+          - Path=/api/v1/dashboard/**
+      - id: report-service-reports
+        uri: lb://report-service
+        predicates:
+          - Path=/api/v1/reports/**
+          
+eureka:
+  client:
+    service-url:
+      defaultZone: http://discovery-server:${DISCOVERY_PORT:8761}/eureka/
+  instance:
+    prefer-ip-address: true
+    lease-renewal-interval-in-seconds: 10
+    lease-expiration-duration-in-seconds: 30
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,gateway
+  endpoint:
+    health:
+      show-details: always
+    gateway:
+      enabled: true
+
+logging:
+  level:
+    org.springframework.cloud.gateway: INFO
+    com.smms.gateway: DEBUG
+    reactor.netty: WARN
