@@ -1,0 +1,33 @@
+# ─────────────────────────────────────────────────────────────
+# Report Service Configuration
+# ─────────────────────────────────────────────────────────────
+server:
+  port: ${REPORT_PORT:8086}
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://discovery-server:${DISCOVERY_PORT:8761}/eureka/
+  instance:
+    prefer-ip-address: true
+    lease-renewal-interval-in-seconds: 10
+    lease-expiration-duration-in-seconds: 30
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
+logging:
+  level:
+    com.smms.report_service: DEBUG
