@@ -5,7 +5,37 @@ spring:
   application:
     name: api-gateway
 
-  cloud:   
+  config:
+    import:optional:configserver: http://config-server:${CONFIG_PORT:8888}
+
+
+  cloud: 
+
+    config:
+      enabled: false  
+  
+    gateway:
+      # ─── CORS ──────────────────────────────────────────────
+      # Allow requests only from the Vercel frontend origin.
+      # In local dev: http://localhost:5173
+      # In production: https://your-app.vercel.app
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOrigins:
+              - ${CORS_ALLOWED_ORIGIN:http://localhost:5173}
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - PATCH
+              - OPTIONS
+            allowedHeaders:
+              - "*"
+            allowCredentials: true
+            maxAge: 3600  
+            
     # ─── ROUTES ────────────────────────────────────────────
     # lb:// prefix = Spring Cloud LoadBalancer resolves the
     # service name from Eureka and applies round-robin LB.
@@ -54,7 +84,13 @@ spring:
         uri: lb://report-service
         predicates:
           - Path=/api/v1/reports/**
-          
+
+# ─── JWT ─────────────────────────────────────────────────────
+# The gateway needs the JWT secret to validate tokens
+# WITHOUT calling the auth-service on every request (fast!).
+jwt:
+  secret: ${JWT_SECRET:a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2}
+
 eureka:
   client:
     service-url:
@@ -78,5 +114,5 @@ management:
 logging:
   level:
     org.springframework.cloud.gateway: INFO
-    com.smms.gateway: DEBUG
+    com.smms.api_gateway: DEBUG
     reactor.netty: WARN
