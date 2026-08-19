@@ -5,11 +5,11 @@ spring:
 
   application:
     name: discovery-server
-
-#  security: 
-#    user:
-#      name: ${EUREKA_USER:admin}
-#      password: ${EUREKA_PASSWORD:admin123}
+  security:
+    user:
+      # Basic auth disabled for internal network — see SecurityConfig
+      name: admin
+      password: admin123
       
 eureka:
 
