@@ -1,0 +1,4 @@
+# /etc/caddy/Caddyfile
+ourdomain.com {
+    reverse_proxy localhost:8080    # Spring Cloud Gateway
+}
