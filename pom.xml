@@ -26,18 +26,18 @@
     <description>Student Mentoring Management System — Maven Multi-Module Parent</description>
 
     <!-- ─────────────────────────────────────────────────────────
-         MODULES — all 9 services declared here
+         MODULES — Corrected paths for local setup
     ───────────────────────────────────────────────────────────── -->
     <modules>
-        <module>discovery-server</module>
-        <module>config-server</module>
-        <module>api-gateway</module>
-        <module>auth-service</module>
-        <module>user-service</module>
+        <!-- Infrastructure (Inside services folder) -->
+        <module>services/discovery-server</module>
+        <module>services/config-server</module>
+        <module>services/api-gateway</module>
+
+        <!-- Your Services (In the root folder) -->
         <module>allocation-service</module>
         <module>meeting-service</module>
         <module>session-service</module>
-        <module>report-service</module>
     </modules>
 
     <!-- ─────────────────────────────────────────────────────────
@@ -47,7 +47,7 @@
         <java.version>21</java.version>
         <spring-cloud.version>2025.1.2</spring-cloud.version>
         <jjwt.version>0.12.7</jjwt.version>
-        <lombok.version>1.18.30</lombok.version>
+        <lombok.version>1.18.34</lombok.version>
         <springdoc.version>2.8.5</springdoc.version>
         <poi.version>5.3.0</poi.version>
         <openpdf.version>2.0.2</openpdf.version>
