@@ -17,27 +17,29 @@
 
     <dependencies>
 
-        <!-- Eureka client — gateway uses lb:// URIs resolved by Eureka 
+        <!-- Eureka client — gateway uses lb:// URIs resolved by Eureka       -->
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
-
         </dependency>
-        -->
-        
-        <!-- Spring Cloud LoadBalancer — resolves lb:// URIs (built-in, free) 
+  
+        <!-- Spring Cloud LoadBalancer — resolves lb:// URIs (built-in, free)      -->
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-loadbalancer</artifactId>
         </dependency>
-        -->
-
-        <!-- Config Client — reads from config-server 
+   
+        <!-- Config Client — reads from config-server         -->
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-config</artifactId>
         </dependency>
-        -->
+
+        <!-- Spring Cloud Gateway — WebFlux based (reactive) -->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-gateway-server-webflux</artifactId>
+        </dependency>
 
         <!-- JWT — for validating tokens in the filter -->
         <dependency>
