@@ -1,0 +1,18 @@
+package com.smms.auth.domain;
+
+public enum AuditAction {
+    LOGIN_ATTEMPT,
+    OTP_SENT,
+    OTP_VERIFIED,
+    OTP_FAILED,
+    OTP_RESENT,
+    LOGIN_SUCCESS,
+    LOGIN_FAILED,
+    LOGOUT,
+    TOKEN_REFRESHED,
+    PASSWORD_RESET,
+    ACCOUNT_CREATED,
+    ACCOUNT_UPDATED,
+    ACCOUNT_LOCKED,
+    ACCOUNT_UNLOCKED
+}
