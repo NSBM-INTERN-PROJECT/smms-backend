@@ -14,19 +14,27 @@ import java.util.List;
 @Repository
 public interface EscalationRepository extends JpaRepository<Escalation, Long> {
 
-    Page<Escalation> findByStudentUserIdOrderByCreatedAtDesc(Long studentUserId, Pageable pageable);
-    Page<Escalation> findByMentorUserIdOrderByCreatedAtDesc(Long mentorUserId, Pageable pageable);
+    Page<Escalation> findByStudentUserIdOrderByCreatedAtDesc(
+        Long studentUserId, Pageable pageable);
+    
+    Page<Escalation> findByMentorUserIdOrderByCreatedAtDesc(
+        Long mentorUserId, Pageable pageable);
 
-    @Query("""SELECT e FROM Escalation e WHERE
-           (:status IS NULL OR e.status = :status) AND
-           (:category IS NULL OR e.category = :category)
-           ORDER BY e.createdAt DESC""")
+    @Query("SELECT e FROM Escalation e WHERE " +
+           "(:status IS NULL OR e.status = :status) AND " +
+           "(:category IS NULL OR e.category = :category) " +
+           "ORDER BY e.createdAt DESC")
     Page<Escalation> findByFilters(
             @Param("status") EscalationStatus status,
             @Param("category") EscalationCategory category,
             Pageable pageable);
 
-    List<Escalation> findByStudentUserIdAndStatusIn(Long studentUserId, List<EscalationStatus> statuses);
-    long countByStudentUserIdAndStatus(Long studentUserId, EscalationStatus status);
+    List<Escalation> findByStudentUserIdAndStatusIn(
+        Long studentUserId, List<EscalationStatus> statuses);
+
+    long countByStudentUserIdAndStatus(
+        Long studentUserId, EscalationStatus status);
+
     long countByStatus(EscalationStatus status);
+    
 }

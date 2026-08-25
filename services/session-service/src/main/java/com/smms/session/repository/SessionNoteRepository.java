@@ -17,16 +17,22 @@ public interface SessionNoteRepository extends JpaRepository<SessionNote, Long> 
     boolean existsByMeetingId(Long meetingId);
 
     /** All notes for a student — respects isPrivate flag for non-mentor viewers. */
-    Page<SessionNote> findByStudentUserIdOrderByCreatedAtDesc(Long studentUserId, Pageable pageable);
+    Page<SessionNote> findByStudentUserIdOrderByCreatedAtDesc(
+        Long studentUserId, Pageable pageable);
 
     /** Notes visible to non-mentor (only public notes). */
-    Page<SessionNote> findByStudentUserIdAndIsPrivateFalseOrderByCreatedAtDesc(Long studentUserId, Pageable pageable);
+    Page<SessionNote> findByStudentUserIdAndIsPrivateFalseOrderByCreatedAtDesc(
+        Long studentUserId, Pageable pageable);
 
     /** Mentor's notes for a student. */
-    Page<SessionNote> findByMentorUserIdAndStudentUserIdOrderByCreatedAtDesc(Long mentorUserId, Long studentUserId, Pageable pageable);
+    Page<SessionNote> findByMentorUserIdAndStudentUserIdOrderByCreatedAtDesc(
+        Long mentorUserId, Long studentUserId, Pageable pageable);
 
     /** Count AT_RISK / CRITICAL students for a mentor — for report summaries. */
-    @Query("SELECT COUNT(DISTINCT s.studentUserId) FROM SessionNote s WHERE s.mentorUserId = :mentorUserId AND s.progressStatus IN ('AT_RISK', 'CRITICAL')")
+    @Query("SELECT COUNT(DISTINCT s.studentUserId) FROM SessionNote s " +
+           "WHERE s.mentorUserId = :mentorUserId " +
+           "AND (s.progressStatus = com.smms.session.domain.ProgressStatus.AT_RISK " +
+           "  OR s.progressStatus = com.smms.session.domain.ProgressStatus.CRITICAL)")
     long countAtRiskStudentsByMentor(Long mentorUserId);
 
     /** Latest note per student — used for summary dashboards. */
