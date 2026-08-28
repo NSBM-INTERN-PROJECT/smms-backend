@@ -50,9 +50,9 @@ public class JwtAuthFilter implements GlobalFilter, Ordered {
      * OTP endpoints are public because the user hasn't received a JWT yet.
      */
     private static final List<String> PUBLIC_PATHS = List.of(
-            "/api/auth/login",
-            "/api/auth/verify-otp",
-            "/api/auth/resend-otp",
+            "/api/v1/auth/login",
+            "/api/v1/auth/verify-otp",
+            "/api/v1/auth/resend-otp",
             "/actuator/health",
             "/actuator/info"
     );
