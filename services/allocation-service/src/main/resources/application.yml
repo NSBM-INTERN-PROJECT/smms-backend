@@ -7,7 +7,7 @@ spring:
     name: allocation-service
 
   config:
-    import:optional:configserver: http://localhost:${CONFIG_PORT:8888}
+    import: optional:configserver:http://localhost:${CONFIG_PORT:8888}
 
   datasource:
     url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/smms_alloc?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
@@ -17,7 +17,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: update
     show-sql: false
     properties:
       hibernate:
