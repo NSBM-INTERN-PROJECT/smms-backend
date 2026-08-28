@@ -23,7 +23,7 @@ spring:
     show-sql: false
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.MySQL8Dialect
+        dialect: org.hibernate.dialect.MySQLDialect
   
   #Flyway Configuration for database migrations
   flyway:
@@ -34,7 +34,7 @@ spring:
 eureka:
   client:
     service-url:
-      defaultZone: http://localhost:${DISCOVERY_PORT:8761}/eureka/
+      defaultZone: http://${EUREKA_USER}:${EUREKA_PASS}@localhost:${DISCOVERY_PORT}/eureka/
   instance:
     prefer-ip-address: true
     lease-renewal-interval-in-seconds: 10
