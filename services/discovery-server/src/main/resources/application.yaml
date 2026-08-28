@@ -8,8 +8,8 @@ spring:
   security:
     user:
       # Basic auth disabled for internal network — see SecurityConfig
-      name: admin
-      password: admin123
+      name: ${EUREKA_USER}
+      password: ${EUREKA_PASS}
       
 eureka:
 
