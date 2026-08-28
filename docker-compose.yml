@@ -1,0 +1,54 @@
+# ─────────────────────────────────────────────────────────────
+# SMMS — Docker Compose
+#
+# HOW TO USE:
+#   cp .env.example .env      # fill in real values first!
+#   docker compose up -d --build
+#
+# START ORDER:
+#   mysql → discovery-server → config-server → api-gateway
+#   → business services → report-service
+#
+# SCALE A SERVICE (for load balancing demo):
+#   docker compose up --scale meeting-service=2 -d
+# ─────────────────────────────────────────────────────────────
+
+services:
+
+  # ──────────────────────────────────────────────────────────
+  # MySQL 8 — single container, hosts all 5 schemas
+  # ──────────────────────────────────────────────────────────
+  mysql:
+    image: mysql:8.0
+    container_name: smms-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASS}
+    ports:
+      - "${DB_PORT:-3306}:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql:ro,Z
+    env_file: .env
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_ROOT_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    networks:
+      - smms-network
+
+# ──────────────────────────────────────────────────────────
+# VOLUMES & NETWORKS
+# ──────────────────────────────────────────────────────────
+volumes:
+  mysql_data:
+    name: smms_mysql_data
+
+networks:
+  smms-network:
+    name: smms-network
+    driver: bridge
