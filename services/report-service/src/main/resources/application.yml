@@ -7,7 +7,7 @@ spring:
     name: report-service
 
   config:
-    import: optional:configserver:http://config-server:${CONFIG_PORT:8888}
+    import:optional:configserver: http://localhost:${CONFIG_PORT:8888}
     
   # NO datasource — report-service has no database
   autoconfigure:
@@ -19,7 +19,7 @@ spring:
 eureka:
   client:
     service-url:
-      defaultZone: http://localhost:${DISCOVERY_PORT:8761}/eureka/
+      defaultZone: http://${EUREKA_USER}:${EUREKA_PASS}@localhost:${DISCOVERY_PORT}/eureka/
   instance:
     prefer-ip-address: true
     lease-renewal-interval-in-seconds: 10
