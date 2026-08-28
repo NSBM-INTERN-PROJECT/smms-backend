@@ -1,0 +1,29 @@
+spring:
+  application:
+    name: report-service
+  config:
+    import: optional:configserver:http://${CONFIG_HOST:localhost}:${CONFIG_PORT:8888}
+
+server:
+  port: ${REPORT_PORT:8086}
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://${DISCOVERY_HOST:localhost}:${DISCOVERY_PORT:8761}/eureka/
+
+jwt:
+  secret: ${JWT_SECRET:}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: when_authorized
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
