@@ -1,0 +1,27 @@
+package com.smms.discovery_server;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.web.SecurityFilterChain;
+
+/**
+ * Disables Spring Security's default login page for the Eureka dashboard.
+ * The Eureka server does not need auth in the internal Docker network.
+ * In production, access is restricted by Oracle Cloud Security List rules
+ * (port 8761 is NOT exposed externally — only the gateway port 8080 is).
+ */
+@Configuration
+@EnableWebSecurity
+public class SecurityConfig {
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http
+            .csrf(AbstractHttpConfigurer::disable)
+            .authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
+        return http.build();
+    }
+}
