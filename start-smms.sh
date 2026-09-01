@@ -14,6 +14,16 @@ DISCOVERY_PORT="${DISCOVERY_PORT:-8761}"
 CONFIG_PORT="${CONFIG_PORT:-8888}"
 GATEWAY_PORT="${GATEWAY_PORT:-8080}"
 
+AUTH_PORT="${AUTH_PORT:-8081}"
+USER_PORT="${USER_PORT:-8082}"
+ALLOC_PORT="${ALLOC_PORT:-8083}"
+MEETING_PORT="${MEETING_PORT:-8084}"
+SESSION_PORT="${SESSION_PORT:-8085}"
+REPORT_PORT="${REPORT_PORT:-8086}"
+
+MYSQL_HOST="${MYSQL_HOST:-localhost}"
+MYSQL_PORT="${MYSQL_PORT:-3306}"
+
 # =========================================
 # Helper functions
 # =========================================
@@ -81,7 +91,7 @@ set +a
 echo "Environment loaded."
 
 # =========================================
-# Start Docker
+# Start Docker Services
 # =========================================
 
 log "Starting Docker services"
@@ -96,15 +106,13 @@ echo "Docker services started."
 
 log "Checking MySQL"
 
-# Change this if your MySQL host/port is different
-MYSQL_HOST="${MYSQL_HOST:-localhost}"
-MYSQL_PORT="${MYSQL_PORT:-3306}"
-
 wait_for_port "$MYSQL_HOST" "$MYSQL_PORT" "MySQL"
 
 # =========================================
-# Remove old tmux session
+# Remove Old tmux Session
 # =========================================
+
+log "Preparing tmux session"
 
 tmux kill-session -t "$TMUX_SESSION" 2>/dev/null || true
 
@@ -147,44 +155,104 @@ start_service "api-gateway"
 wait_for_port "localhost" "$GATEWAY_PORT" "API Gateway"
 
 # =========================================
-# Start Business Services
+# Start User Service
 # =========================================
 
-log "Starting Business Services"
+log "Starting User Service"
 
 start_service "user-service"
+
+wait_for_port "localhost" "$USER_PORT" "User Service"
+
+# =========================================
+# Start Auth Service
+# =========================================
+
+log "Starting Auth Service"
+
 start_service "auth-service"
+
+wait_for_port "localhost" "$AUTH_PORT" "Auth Service"
+
+# =========================================
+# Start Allocation Service
+# =========================================
+
+log "Starting Allocation Service"
+
 start_service "allocation-service"
+
+wait_for_port "localhost" "$ALLOC_PORT" "Allocation Service"
+
+# =========================================
+# Start Meeting Service
+# =========================================
+
+log "Starting Meeting Service"
+
 start_service "meeting-service"
+
+wait_for_port "localhost" "$MEETING_PORT" "Meeting Service"
+
+# =========================================
+# Start Session Service
+# =========================================
+
+log "Starting Session Service"
+
 start_service "session-service"
+
+wait_for_port "localhost" "$SESSION_PORT" "Session Service"
+
+# =========================================
+# Start Report Service
+# =========================================
+
+log "Starting Report Service"
+
 start_service "report-service"
+
+wait_for_port "localhost" "$REPORT_PORT" "Report Service"
 
 # =========================================
 # Finished
 # =========================================
 
-log "SMMS Backend Started"
+log "SMMS Backend Started Successfully"
 
+echo ""
 echo "TMUX session: $TMUX_SESSION"
 echo ""
-echo "Services:"
+
+echo "Infrastructure:"
+echo "  MySQL            : $MYSQL_PORT"
 echo "  Discovery Server : $DISCOVERY_PORT"
 echo "  Config Server    : $CONFIG_PORT"
 echo "  API Gateway      : $GATEWAY_PORT"
 echo ""
+
 echo "Business services:"
-echo "  auth-service"
-echo "  user-service"
-echo "  allocation-service"
-echo "  meeting-service"
-echo "  session-service"
-echo "  report-service"
+echo "  Auth Service     : $AUTH_PORT"
+echo "  User Service     : $USER_PORT"
+echo "  Allocation       : $ALLOC_PORT"
+echo "  Meeting          : $MEETING_PORT"
+echo "  Session          : $SESSION_PORT"
+echo "  Report           : $REPORT_PORT"
 echo ""
+
+echo "All services are now listening on their configured ports."
+echo ""
+
 echo "Attach to the session:"
 echo "  tmux attach -t $TMUX_SESSION"
 echo ""
+
 echo "Detach without stopping services:"
 echo "  Ctrl+B, D"
 echo ""
+
+# =========================================
+# Attach to tmux session
+# =========================================
 
 tmux attach -t "$TMUX_SESSION"
