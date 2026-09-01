@@ -78,15 +78,43 @@ public class GlobalExceptionHandler {
     }
 
     /**
+     * Handles missing request headers (e.g. missing X-User-Id).
+     */
+    @ExceptionHandler(org.springframework.web.bind.MissingRequestHeaderException.class)
+    public ResponseEntity<ErrorResponse> handleMissingHeader(org.springframework.web.bind.MissingRequestHeaderException ex) {
+        log.warn("Missing request header: {}", ex.getHeaderName());
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
+                ErrorResponse.builder()
+                        .error("MISSING_HEADER")
+                        .message("Required header '" + ex.getHeaderName() + "' is missing")
+                        .status(HttpStatus.UNAUTHORIZED.value())
+                        .build());
+    }
+
+    /**
+     * Handles invalid path variables or header type mismatches.
+     */
+    @ExceptionHandler(org.springframework.web.method.annotation.MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ErrorResponse> handleTypeMismatch(org.springframework.web.method.annotation.MethodArgumentTypeMismatchException ex) {
+        log.warn("Type mismatch for parameter [{}]: {}", ex.getName(), ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                ErrorResponse.builder()
+                        .error("INVALID_PARAMETER")
+                        .message("Invalid value for parameter: " + ex.getName())
+                        .status(HttpStatus.BAD_REQUEST.value())
+                        .build());
+    }
+
+    /**
      * Catch-all for unexpected errors — returns 500 without leaking internals.
      */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGeneric(Exception ex) {
-        log.error("Unhandled exception in auth-service", ex);
+        log.error("Unhandled exception in auth-service: {}", ex.getMessage(), ex);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
                 ErrorResponse.builder()
                         .error("INTERNAL_ERROR")
-                        .message("An unexpected error occurred")
+                        .message(ex.getMessage() != null && !ex.getMessage().isBlank() ? ex.getMessage() : "An unexpected error occurred")
                         .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
                         .build());
     }
