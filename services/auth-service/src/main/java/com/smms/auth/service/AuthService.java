@@ -5,6 +5,7 @@ import com.smms.auth.domain.AuditLog;
 import com.smms.auth.domain.RefreshToken;
 import com.smms.auth.domain.User;
 import com.smms.auth.domain.UserStatus;
+import com.smms.auth.dto.request.ChangePasswordRequest;
 import com.smms.auth.dto.request.LoginRequest;
 import com.smms.auth.dto.request.RefreshTokenRequest;
 import com.smms.auth.dto.request.ResendOtpRequest;
@@ -70,6 +71,25 @@ public class AuthService {
                 .expiresInSeconds(300)
                 .resendCooldownSeconds(60)
                 .build();
+    }
+
+    /**
+     * change password admin boostrap account
+     */
+    @Transactional
+    public void changePassword(Long userId, ChangePasswordRequest request, HttpServletRequest httpRequest) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new AccountNotFoundException(userId));
+
+        if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPasswordHash())) {
+            throw new com.smms.auth.exception.AuthException("INVALID_PASSWORD", "Current password is incorrect", org.springframework.http.HttpStatus.BAD_REQUEST);
+        }
+
+        user.setPasswordHash(passwordEncoder.encode(request.getNewPassword()));
+        user.setMustChangePassword(false);
+        userRepository.save(user);
+
+        auditLog(user.getId(), AuditAction.PASSWORD_RESET, httpRequest, "Password updated by user");
     }
 
     /**
@@ -193,4 +213,6 @@ public class AuthService {
         if (at <= 1) return email;
         return email.charAt(0) + "***" + email.substring(at);
     }
+
+
 }
