@@ -49,6 +49,27 @@ public class AuthController {
         return ResponseEntity.ok(authService.resendOtp(request, httpRequest));
     }
 
+    @Operation(summary = "Change-password admin of boostrap")
+    @PostMapping("/change-password")
+    public ResponseEntity<Void> changePassword(
+            @Valid @RequestBody ChangePasswordRequest request,
+            @RequestHeader(value = "X-User-Id", required = false) Long userId,
+            HttpServletRequest httpRequest) {
+        if (userId == null) {
+            org.springframework.security.core.Authentication auth = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+            if (auth != null && auth.getPrincipal() != null) {
+                try {
+                    userId = Long.parseLong(auth.getPrincipal().toString());
+                } catch (NumberFormatException ignored) {}
+            }
+        }
+        if (userId == null) {
+            throw new com.smms.auth.exception.AuthException("UNAUTHORIZED", "User identity is required", org.springframework.http.HttpStatus.UNAUTHORIZED);
+        }
+        authService.changePassword(userId, request, httpRequest);
+        return ResponseEntity.noContent().build();
+    }
+
     @Operation(summary = "Refresh access token using a valid refresh token")
     @PostMapping("/refresh")
     public ResponseEntity<AuthResponse> refresh(
