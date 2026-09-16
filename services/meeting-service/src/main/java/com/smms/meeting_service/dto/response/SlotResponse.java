@@ -20,6 +20,17 @@ public class SlotResponse {
     private SlotStatus status;
     private String filterCriteria;
     private LocalDateTime createdAt;
+    private Long allocationId;
+    private Long assignedStudentUserId;
+    private String assignedStudentName;
+    private SlotAllocationStatus allocationStatus;
+
+    public LocalTime getEndTime() {
+        if (startTime != null && durationMinutes != null) {
+            return startTime.plusMinutes(durationMinutes);
+        }
+        return startTime;
+    }
 
     public static SlotResponse from(MeetingSlot s) {
         return SlotResponse.builder()
@@ -30,4 +41,15 @@ public class SlotResponse {
                 .status(s.getStatus()).filterCriteria(s.getFilterCriteria())
                 .createdAt(s.getCreatedAt()).build();
     }
+
+    public static SlotResponse from(MeetingSlot s, MeetingSlotAllocation a) {
+        SlotResponse resp = from(s);
+        if (a != null) {
+            resp.setAllocationId(a.getId());
+            resp.setAssignedStudentUserId(a.getStudentUserId());
+            resp.setAllocationStatus(a.getStatus());
+        }
+        return resp;
+    }
 }
+

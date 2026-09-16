@@ -4,6 +4,7 @@ import com.smms.meeting_service.domain.*;
 import com.smms.meeting_service.dto.request.*;
 import com.smms.meeting_service.dto.response.*;
 import com.smms.meeting_service.exception.SlotNotFoundException;
+import com.smms.meeting_service.repository.MeetingRepository;
 import com.smms.meeting_service.repository.MeetingSlotAllocationRepository;
 import com.smms.meeting_service.repository.MeetingSlotRepository;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +25,7 @@ public class SlotService {
 
     private final MeetingSlotRepository slotRepo;
     private final MeetingSlotAllocationRepository allocationRepo;
+    private final MeetingRepository meetingRepo;
     private final NotificationService notificationService;
 
     /**
@@ -111,13 +113,27 @@ public class SlotService {
         return SlotResponse.from(slotRepo.save(slot));
     }
 
+    @Transactional(readOnly = true)
+    public List<SlotResponse> getStudentSlotInvitations(Long studentUserId) {
+        List<MeetingSlotAllocation> pendingAllocations = allocationRepo
+                .findByStudentUserIdAndStatus(studentUserId, SlotAllocationStatus.PENDING);
+        List<SlotResponse> result = new ArrayList<>();
+        for (MeetingSlotAllocation alloc : pendingAllocations) {
+            slotRepo.findById(alloc.getSlotId()).ifPresent(slot -> {
+                result.add(SlotResponse.from(slot, alloc));
+            });
+        }
+        return result;
+    }
+
     /** Student responds to a slot assignment: ACCEPTED or RESCHEDULE_REQUESTED. */
     @Transactional
-    public SlotAllocationResponse respondToSlot(Long allocationId, Long studentUserId,
+    public SlotAllocationResponse respondToSlot(Long idOrSlotId, Long studentUserId,
                                                  SlotResponseRequest req) {
-        MeetingSlotAllocation alloc = allocationRepo.findById(allocationId)
+        MeetingSlotAllocation alloc = allocationRepo.findById(idOrSlotId)
+                .or(() -> allocationRepo.findBySlotIdAndStudentUserId(idOrSlotId, studentUserId))
                 .orElseThrow(() -> new com.smms.meeting_service.exception.MeetingException(
-                        "ALLOCATION_NOT_FOUND", "Slot allocation not found: " + allocationId,
+                        "ALLOCATION_NOT_FOUND", "Slot allocation not found: " + idOrSlotId,
                         org.springframework.http.HttpStatus.NOT_FOUND));
 
         if (!alloc.getStudentUserId().equals(studentUserId))
@@ -127,8 +143,27 @@ public class SlotService {
         alloc.setStudentResponse(req.getResponse());
         alloc.setRespondedAt(LocalDateTime.now());
 
+        MeetingSlot slot = slotRepo.findById(alloc.getSlotId()).orElse(null);
+
         if (req.getResponse() == StudentResponse.ACCEPTED) {
             alloc.setStatus(SlotAllocationStatus.CONFIRMED);
+            if (slot != null) {
+                Meeting meeting = Meeting.builder()
+                        .mentorUserId(slot.getMentorUserId())
+                        .studentUserId(studentUserId)
+                        .title("Mentoring Consultation Session")
+                        .description("Slot scheduled session")
+                        .scheduledDate(slot.getSlotDate())
+                        .scheduledTime(slot.getStartTime())
+                        .durationMinutes(slot.getDurationMinutes() != null ? slot.getDurationMinutes() : 30)
+                        .location(slot.getLocation())
+                        .mode(slot.getMode() != null ? slot.getMode() : MeetingMode.PHYSICAL)
+                        .meetingLink(slot.getMeetingLink())
+                        .status(MeetingStatus.SCHEDULED)
+                        .attendanceStatus(AttendanceStatus.PENDING)
+                        .build();
+                meetingRepo.save(meeting);
+            }
         } else {
             alloc.setStatus(SlotAllocationStatus.RESCHEDULE_REQUESTED);
             alloc.setRescheduleReason(req.getRescheduleReason());
@@ -137,13 +172,14 @@ public class SlotService {
         allocationRepo.save(alloc);
 
         // Get slot to notify mentor
-        slotRepo.findById(alloc.getSlotId()).ifPresent(slot ->
-                notificationService.push(slot.getMentorUserId(), NotificationType.SLOT_RESPONSE,
-                        "Student Responded to Slot",
-                        "Student " + studentUserId + " has " +
-                        (req.getResponse() == StudentResponse.ACCEPTED ? "accepted" : "requested a reschedule for") +
-                        " the slot on " + slot.getSlotDate() + ".",
-                        allocationId, "MeetingSlotAllocation"));
+        if (slot != null) {
+            notificationService.push(slot.getMentorUserId(), NotificationType.SLOT_RESPONSE,
+                    "Student Responded to Slot",
+                    "Student " + studentUserId + " has " +
+                    (req.getResponse() == StudentResponse.ACCEPTED ? "accepted" : "requested a reschedule for") +
+                    " the slot on " + slot.getSlotDate() + ".",
+                    alloc.getId(), "MeetingSlotAllocation");
+        }
 
         return SlotAllocationResponse.from(alloc);
     }

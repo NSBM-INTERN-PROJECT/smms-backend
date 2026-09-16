@@ -16,7 +16,7 @@ import java.util.List;
  *
  * These calls go through the API Gateway (service discovery via Eureka).
  */
-@FeignClient(name = "user-service", path = "/api/users")
+@FeignClient(name = "user-service", path = "/api/v1/users")
 public interface UserServiceClient {
 
     /**

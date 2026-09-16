@@ -60,6 +60,27 @@ public class SessionController {
         return ResponseEntity.ok(noteService.getStudentHistory(studentUserId, userId, role, page, size));
     }
 
+    @Operation(summary = "Get my session notes (Student)")
+    @GetMapping("/notes/student/me")
+    @PreAuthorize("hasRole('STUDENT')")
+    public ResponseEntity<PagedResponse<SessionNoteResponse>> getMyStudentNotes(
+            @RequestHeader("X-User-Id") Long userId,
+            @RequestHeader("X-User-Role") String role,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        return ResponseEntity.ok(noteService.getStudentHistory(userId, userId, role, page, size));
+    }
+
+    @Operation(summary = "Get all session notes created by the logged-in mentor")
+    @GetMapping({"/notes/mentor/me", "/notes/my"})
+    @PreAuthorize("hasRole('MENTOR')")
+    public ResponseEntity<PagedResponse<SessionNoteResponse>> getMentorNotes(
+            @RequestHeader("X-User-Id") Long mentorUserId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        return ResponseEntity.ok(noteService.getMentorNotes(mentorUserId, page, size));
+    }
+
     @Operation(summary = "Update a session note (Mentor — own notes only)")
     @PutMapping("/notes/{id}")
     @PreAuthorize("hasRole('MENTOR')")

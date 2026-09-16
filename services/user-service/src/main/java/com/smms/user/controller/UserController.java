@@ -202,4 +202,37 @@ public class UserController {
         dataCollectionService.markSubmitted(id, studentUserId);
         return ResponseEntity.noContent().build();
     }
+
+    @Operation(summary = "Student views assigned data-collection tasks / surveys")
+    @GetMapping("/data-collection-requests/my")
+    @PreAuthorize("hasRole('STUDENT')")
+    public ResponseEntity<java.util.List<StudentTaskResponse>> getMyTasks(
+            @RequestHeader("X-User-Id") Long studentUserId) {
+        return ResponseEntity.ok(dataCollectionService.getTasksForStudent(studentUserId));
+    }
+
+    @Operation(summary = "Mentor updates their own profile details")
+    @PutMapping("/profiles/mentor/me")
+    @PreAuthorize("hasRole('MENTOR')")
+    public ResponseEntity<MentorProfileResponse> updateMyMentorProfile(
+            @RequestHeader("X-User-Id") Long mentorUserId,
+            @Valid @RequestBody UpdateMentorProfileRequest req) {
+        return ResponseEntity.ok(mentorService.update(mentorUserId, req));
+    }
+
+    // ─── Internal Inter-Service Endpoints ─────────────────────────────────────
+
+    @Operation(summary = "Internal: Get active students summary for allocation and reports")
+    @GetMapping("/internal/students/ids")
+    public ResponseEntity<java.util.List<StudentSummaryDto>> getActiveStudents(
+            @RequestParam(required = false) String batch,
+            @RequestParam(required = false) String department) {
+        return ResponseEntity.ok(studentService.getActiveStudents(batch, department));
+    }
+
+    @Operation(summary = "Internal: Get active mentors with capacity for allocation and reports")
+    @GetMapping("/internal/mentors/capacity")
+    public ResponseEntity<java.util.List<MentorCapacityDto>> getActiveMentorsWithCapacity() {
+        return ResponseEntity.ok(mentorService.getActiveMentorsWithCapacity());
+    }
 }

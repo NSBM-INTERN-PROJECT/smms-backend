@@ -10,7 +10,10 @@ public class EscalationResponse {
     private Long id;
     private Long sessionNoteId;
     private Long mentorUserId;
+    private String mentorName;
     private Long studentUserId;
+    private String studentName;
+    private String studentBatch;
     private EscalationCategory category;
     private String description;
     private EscalationRole escalatedToRole;

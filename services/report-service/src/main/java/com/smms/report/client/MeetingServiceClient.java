@@ -10,17 +10,24 @@ import org.springframework.web.bind.annotation.RequestParam;
 @FeignClient(name = "meeting-service")
 public interface MeetingServiceClient {
 
-    @GetMapping("/api/meetings/mentor/me/history")
+    @GetMapping("/api/v1/meetings/mentor/me/history")
     PagedResponseDto<MeetingDto> getMentorMeetingHistory(
             @RequestHeader("X-User-Id") Long mentorUserId,
             @RequestHeader("X-User-Role") String role,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "500") int size);
 
-    @GetMapping("/api/meetings/student/me/history")
+    @GetMapping("/api/v1/meetings/student/me/history")
     PagedResponseDto<MeetingDto> getStudentMeetingHistory(
             @RequestHeader("X-User-Id") Long studentUserId,
             @RequestHeader("X-User-Role") String role,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "500") int size);
+
+    @GetMapping("/api/v1/meetings/requests/mentor/me/pending")
+    PagedResponseDto<Object> getPendingRequests(
+            @RequestHeader("X-User-Id") Long mentorUserId,
+            @RequestHeader("X-User-Role") String role,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "1") int size);
 }

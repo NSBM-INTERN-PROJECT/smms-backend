@@ -10,6 +10,7 @@ import lombok.Data;
 public class StudentDashboard {
     private Long studentUserId;
     private Long mentorUserId;
+    private String mentorName;
     private String latestProgressStatus;  // ON_TRACK / NEEDS_ATTENTION / AT_RISK / CRITICAL
     private long totalMeetings;
     private long completedMeetings;
@@ -18,4 +19,5 @@ public class StudentDashboard {
     private long attendanceAbsent;
     private long openEscalations;
     private long totalSessionNotes;
+    private Object nextMeeting;
 }

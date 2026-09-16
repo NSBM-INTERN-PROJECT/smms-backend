@@ -7,6 +7,7 @@ import lombok.Data;
 public class StudentSummaryDto {
     private Long userId;
     private String fullName;
+    private String studentId;
     private String batch;
     private String department;
 }

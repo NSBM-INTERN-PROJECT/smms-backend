@@ -13,12 +13,12 @@ import java.util.List;
 public interface UserServiceClient {
 
     /** Internal: all active students (optionally filtered). */
-    @GetMapping("/api/users/internal/students/ids")
+    @GetMapping("/api/v1/users/internal/students/ids")
     List<StudentSummaryDto> getActiveStudents(
             @RequestParam(required = false) String batch,
             @RequestParam(required = false) String department);
 
     /** Internal: all active mentors with capacity. */
-    @GetMapping("/api/users/internal/mentors/capacity")
+    @GetMapping("/api/v1/users/internal/mentors/capacity")
     List<MentorSummaryDto> getActiveMentors();
 }

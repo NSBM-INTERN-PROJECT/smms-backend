@@ -28,6 +28,10 @@ public interface SessionNoteRepository extends JpaRepository<SessionNote, Long> 
     Page<SessionNote> findByMentorUserIdAndStudentUserIdOrderByCreatedAtDesc(
         Long mentorUserId, Long studentUserId, Pageable pageable);
 
+    /** All notes authored by a mentor. */
+    Page<SessionNote> findByMentorUserIdOrderByCreatedAtDesc(
+        Long mentorUserId, Pageable pageable);
+
     /** Count AT_RISK / CRITICAL students for a mentor — for report summaries. */
     @Query("SELECT COUNT(DISTINCT s.studentUserId) FROM SessionNote s " +
            "WHERE s.mentorUserId = :mentorUserId " +

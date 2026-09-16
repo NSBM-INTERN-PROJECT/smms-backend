@@ -200,7 +200,36 @@ public class AllocationService {
         var result = (status != null)
                 ? allocationRepo.findByStatus(status, pageable)
                 : allocationRepo.findAll(pageable);
-        return PagedResponse.from(result, AllocationResponse::from);
+
+        Map<Long, StudentSummaryDto> studentMap = Collections.emptyMap();
+        Map<Long, MentorCapacityDto> mentorMap = Collections.emptyMap();
+        try {
+            studentMap = userServiceClient.getActiveStudents(null, null).stream()
+                    .collect(Collectors.toMap(StudentSummaryDto::getUserId, s -> s, (k1, k2) -> k1));
+            mentorMap = userServiceClient.getActiveMentorsWithCapacity().stream()
+                    .collect(Collectors.toMap(MentorCapacityDto::getUserId, m -> m, (k1, k2) -> k1));
+        } catch (Exception e) {
+            log.warn("Could not fetch user directory to enrich allocations: {}", e.getMessage());
+        }
+
+        final Map<Long, StudentSummaryDto> finalStudents = studentMap;
+        final Map<Long, MentorCapacityDto> finalMentors = mentorMap;
+
+        return PagedResponse.from(result, a -> {
+            AllocationResponse r = AllocationResponse.from(a);
+            StudentSummaryDto s = finalStudents.get(a.getStudentUserId());
+            if (s != null) {
+                r.setStudentName(s.getFullName());
+                r.setStudentIdNumber(s.getStudentId());
+                r.setBatch(s.getBatch());
+                r.setDepartment(s.getDepartment());
+            }
+            MentorCapacityDto m = finalMentors.get(a.getMentorUserId());
+            if (m != null) {
+                r.setMentorName(m.getFullName());
+            }
+            return r;
+        });
     }
 
     @Transactional(readOnly = true)

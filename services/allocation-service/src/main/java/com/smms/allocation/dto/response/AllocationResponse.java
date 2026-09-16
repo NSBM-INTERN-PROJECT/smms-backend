@@ -22,6 +22,15 @@ public class AllocationResponse {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
+    // Enriched fields for frontend display
+    private String studentName;
+    private String studentIdNumber;
+    private String mentorName;
+    private String batch;
+    private String department;
+    private String allocatedAt;
+    private String deactivatedAt;
+
     public static AllocationResponse from(Allocation a) {
         return AllocationResponse.builder()
                 .id(a.getId())
@@ -32,6 +41,8 @@ public class AllocationResponse {
                 .status(a.getStatus())
                 .allocatedDate(a.getAllocatedDate())
                 .deactivatedDate(a.getDeactivatedDate())
+                .allocatedAt(a.getAllocatedDate() != null ? a.getAllocatedDate().toString() : null)
+                .deactivatedAt(a.getDeactivatedDate() != null ? a.getDeactivatedDate().toString() : null)
                 .notes(a.getNotes())
                 .createdAt(a.getCreatedAt())
                 .updatedAt(a.getUpdatedAt())

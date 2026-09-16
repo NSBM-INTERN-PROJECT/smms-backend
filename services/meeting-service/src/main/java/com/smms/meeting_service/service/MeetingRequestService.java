@@ -68,9 +68,20 @@ public class MeetingRequestService {
                                     ReviewMeetingRequest review) {
         MeetingRequest req = getAndValidate(requestId, mentorUserId);
         req.setStatus(MeetingRequestStatus.APPROVED);
-        req.setMentorResponseNotes(review.getMentorResponseNotes());
+        String notes = review != null ? review.getEffectiveNotes() : null;
+        req.setMentorResponseNotes(notes);
         req.setRespondedAt(LocalDateTime.now());
         requestRepo.save(req);
+
+        java.time.LocalDate date = (review != null && review.getScheduledDate() != null)
+                ? review.getScheduledDate() : req.getPreferredDate();
+        java.time.LocalTime time = (review != null && review.getScheduledTime() != null)
+                ? review.getScheduledTime() : req.getPreferredTime();
+        MeetingMode mode = (review != null && review.getMode() != null)
+                ? review.getMode()
+                : (review != null && review.getMeetingLink() != null && !review.getMeetingLink().isBlank() ? MeetingMode.ONLINE : MeetingMode.PHYSICAL);
+        String location = review != null ? review.getLocation() : null;
+        String meetingLink = review != null ? review.getMeetingLink() : null;
 
         // Create the meeting
         Meeting meeting = Meeting.builder()
@@ -78,9 +89,13 @@ public class MeetingRequestService {
                 .mentorUserId(mentorUserId)
                 .studentUserId(req.getStudentUserId())
                 .title("Meeting with student " + req.getStudentUserId())
-                .scheduledDate(req.getPreferredDate())
-                .scheduledTime(req.getPreferredTime())
+                .scheduledDate(date)
+                .scheduledTime(time)
+                .mode(mode)
+                .location(location)
+                .meetingLink(meetingLink)
                 .status(MeetingStatus.SCHEDULED)
+                .attendanceStatus(AttendanceStatus.PENDING)
                 .build();
 
         Meeting saved = meetingRepository.save(meeting);
@@ -88,7 +103,7 @@ public class MeetingRequestService {
         notificationService.push(req.getStudentUserId(), NotificationType.MEETING_SCHEDULED,
                 "Meeting Request Approved",
                 "Your meeting request has been approved. Meeting scheduled for " +
-                req.getPreferredDate() + " at " + req.getPreferredTime() + ".",
+                date + " at " + time + ".",
                 saved.getId(), "Meeting");
 
         return MeetingResponse.from(saved);
@@ -99,14 +114,15 @@ public class MeetingRequestService {
     public MeetingRequestResponse reject(Long requestId, Long mentorUserId, ReviewMeetingRequest review) {
         MeetingRequest req = getAndValidate(requestId, mentorUserId);
         req.setStatus(MeetingRequestStatus.REJECTED);
-        req.setMentorResponseNotes(review.getMentorResponseNotes());
+        String notes = review != null ? review.getEffectiveNotes() : null;
+        req.setMentorResponseNotes(notes);
         req.setRespondedAt(LocalDateTime.now());
         requestRepo.save(req);
 
         notificationService.push(req.getStudentUserId(), NotificationType.MEETING_SCHEDULED,
                 "Meeting Request Rejected",
                 "Your meeting request for " + req.getPreferredDate() + " was not approved." +
-                (review.getMentorResponseNotes() != null ? " Note: " + review.getMentorResponseNotes() : ""),
+                (notes != null ? " Note: " + notes : ""),
                 requestId, "MeetingRequest");
 
         return MeetingRequestResponse.from(req);

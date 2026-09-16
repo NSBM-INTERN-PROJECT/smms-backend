@@ -160,9 +160,37 @@ public class DashboardService {
             }
         }
 
+        // Pending meeting requests count
+        long pendingRequests = 0;
+        try {
+            PagedResponseDto<Object> pendingPage = meetingClient.getPendingRequests(mentorUserId, "MENTOR", 0, 1);
+            if (pendingPage != null) {
+                pendingRequests = pendingPage.getTotalElements();
+            }
+        } catch (Exception e) {
+            log.warn("Could not fetch pending requests for mentor {}: {}", mentorUserId, e.getMessage());
+        }
+
+        // Mentor capacity
+        int capacity = 10;
+        try {
+            List<MentorSummaryDto> mentors = userClient.getActiveMentors();
+            if (mentors != null) {
+                for (MentorSummaryDto m : mentors) {
+                    if (mentorUserId.equals(m.getUserId()) && m.getCapacity() != null) {
+                        capacity = m.getCapacity();
+                        break;
+                    }
+                }
+            }
+        } catch (Exception e) {
+            log.warn("Could not fetch mentor capacity for mentor {}: {}", mentorUserId, e.getMessage());
+        }
+
         return MentorDashboard.builder()
                 .mentorUserId(mentorUserId)
                 .totalStudents(summaries.size())
+                .capacity(capacity)
                 .studentsOnTrack(onTrack)
                 .studentsNeedsAttention(needsAtt)
                 .studentsAtRisk(atRisk)
@@ -170,6 +198,7 @@ public class DashboardService {
                 .totalMeetings(meetings.size())
                 .completedMeetings(completed)
                 .openEscalations(openEsc)
+                .pendingMeetingRequestsCount(pendingRequests)
                 .studentSummaries(summaries)
                 .build();
     }
@@ -216,18 +245,28 @@ public class DashboardService {
         long openEsc = escPage.getContent() != null
                 ? escPage.getContent().stream().filter(e -> "OPEN".equals(e.getStatus())).count() : 0;
 
-        // Allocation → get mentorUserId
+        // Allocation → get mentorUserId and mentorName
         Long mentorId = null;
+        String mentorName = null;
         try {
-            AllocationDto alloc = allocationClient.getMentorAllocations(0L).stream()
-                    .filter(a -> studentUserId.equals(a.getStudentUserId()) && "ACTIVE".equals(a.getStatus()))
-                    .findFirst().orElse(null);
-            if (alloc != null) mentorId = alloc.getMentorUserId();
-        } catch (Exception ignored) {}
+            AllocationDto alloc = allocationClient.getStudentMentor(studentUserId);
+            if (alloc != null) {
+                mentorId = alloc.getMentorUserId();
+                mentorName = alloc.getMentorName();
+            }
+        } catch (Exception e) {
+            log.warn("Could not fetch student mentor allocation for student {}: {}", studentUserId, e.getMessage());
+        }
+
+        // Find next meeting if any
+        MeetingDto nextMeeting = meetings.stream()
+                .filter(m -> "SCHEDULED".equals(m.getStatus()))
+                .findFirst().orElse(null);
 
         return StudentDashboard.builder()
                 .studentUserId(studentUserId)
                 .mentorUserId(mentorId)
+                .mentorName(mentorName)
                 .latestProgressStatus(latestStatus)
                 .totalMeetings(meetings.size())
                 .completedMeetings(completed)
@@ -236,6 +275,7 @@ public class DashboardService {
                 .attendanceAbsent(absent)
                 .openEscalations(openEsc)
                 .totalSessionNotes(notes.size())
+                .nextMeeting(nextMeeting)
                 .build();
     }
 

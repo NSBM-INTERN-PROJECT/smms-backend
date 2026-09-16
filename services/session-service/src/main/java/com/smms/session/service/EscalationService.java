@@ -31,9 +31,11 @@ public class EscalationService {
      */
     @Transactional
     public EscalationResponse create(Long mentorUserId, CreateEscalationRequest req) {
-        // Validate session note exists
-        noteRepo.findById(req.getSessionNoteId())
-                .orElseThrow(() -> new SessionNoteNotFoundException(req.getSessionNoteId()));
+        // Validate session note exists if provided
+        if (req.getSessionNoteId() != null) {
+            noteRepo.findById(req.getSessionNoteId())
+                    .orElseThrow(() -> new SessionNoteNotFoundException(req.getSessionNoteId()));
+        }
 
         Escalation escalation = Escalation.builder()
                 .sessionNoteId(req.getSessionNoteId())

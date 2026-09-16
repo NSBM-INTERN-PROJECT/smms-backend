@@ -12,6 +12,7 @@ import java.util.List;
 public class MentorDashboard {
     private Long mentorUserId;
     private int totalStudents;
+    private int capacity;
     private int studentsOnTrack;
     private int studentsNeedsAttention;
     private int studentsAtRisk;
@@ -19,5 +20,6 @@ public class MentorDashboard {
     private long totalMeetings;
     private long completedMeetings;
     private long openEscalations;
+    private long pendingMeetingRequestsCount;
     private List<StudentProgressSummaryDto> studentSummaries;
 }

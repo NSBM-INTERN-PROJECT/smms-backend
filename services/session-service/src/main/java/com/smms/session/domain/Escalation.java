@@ -12,7 +12,7 @@ public class Escalation {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "session_note_id", nullable = false)
+    @Column(name = "session_note_id")
     private Long sessionNoteId;
 
     @Column(name = "mentor_user_id", nullable = false)

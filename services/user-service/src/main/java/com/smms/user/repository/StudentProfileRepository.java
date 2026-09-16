@@ -31,4 +31,5 @@ SELECT s FROM StudentProfile s WHERE s.isActive = true
     List<StudentProfile> findByBatchAndDepartmentAndIsActiveTrue(String batch, String department);
     List<StudentProfile> findByBatchAndIsActiveTrue(String batch);
     List<StudentProfile> findByDepartmentAndIsActiveTrue(String department);
+    List<StudentProfile> findByIsActiveTrue();
 }

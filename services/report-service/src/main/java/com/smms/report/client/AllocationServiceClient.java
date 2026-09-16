@@ -12,15 +12,18 @@ import java.util.List;
 @FeignClient(name = "allocation-service")
 public interface AllocationServiceClient {
 
-    @GetMapping("/api/allocations")
+    @GetMapping("/api/v1/allocations")
     PagedResponseDto<AllocationDto> listAll(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "200") int size,
             @RequestParam(required = false) String status);
 
-    @GetMapping("/api/allocations/mentor/{mentorId}")
+    @GetMapping("/api/v1/allocations/mentor/{mentorId}")
     List<AllocationDto> getMentorAllocations(@PathVariable Long mentorId);
 
-    @GetMapping("/api/allocations/unallocated-students")
+    @GetMapping("/api/v1/allocations/student/{userId}")
+    AllocationDto getStudentMentor(@PathVariable Long userId);
+
+    @GetMapping("/api/v1/allocations/unallocated-students")
     List<Long> getUnallocatedStudentIds();
 }

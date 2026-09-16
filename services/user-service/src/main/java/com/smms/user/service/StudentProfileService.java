@@ -14,6 +14,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import java.util.List;
 
 @Service @RequiredArgsConstructor @Slf4j
 public class StudentProfileService {
@@ -66,5 +67,28 @@ public class StudentProfileService {
         if (req.getRiskStatus() != null)    s.setRiskStatus(req.getRiskStatus());
         if (req.getIsActive() != null)      s.setIsActive(req.getIsActive());
         return StudentProfileResponse.from(studentRepo.save(s));
+    }
+
+    @Transactional(readOnly = true)
+    public List<com.smms.user.dto.response.StudentSummaryDto> getActiveStudents(String batch, String department) {
+        List<StudentProfile> list;
+        if (batch != null && department != null) {
+            list = studentRepo.findByBatchAndDepartmentAndIsActiveTrue(batch, department);
+        } else if (batch != null) {
+            list = studentRepo.findByBatchAndIsActiveTrue(batch);
+        } else if (department != null) {
+            list = studentRepo.findByDepartmentAndIsActiveTrue(department);
+        } else {
+            list = studentRepo.findByIsActiveTrue();
+        }
+        return list.stream().map(s -> com.smms.user.dto.response.StudentSummaryDto.builder()
+                .userId(s.getUserId())
+                .fullName(s.getFullName())
+                .email(s.getEmail())
+                .studentId(s.getStudentId())
+                .batch(s.getBatch())
+                .department(s.getDepartment())
+                .profileStatus("APPROVED")
+                .build()).collect(java.util.stream.Collectors.toList());
     }
 }

@@ -7,12 +7,15 @@ import com.smms.user.dto.response.DataCollectionResponse;
 import com.smms.user.exception.RequestNotFoundException;
 import com.smms.user.repository.DataCollectionRecipientRepository;
 import com.smms.user.repository.DataCollectionRequestRepository;
+import com.smms.user.dto.response.StudentTaskResponse;
+import com.smms.user.repository.MentorProfileRepository;
 import com.smms.user.repository.StudentProfileRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -23,6 +26,7 @@ public class DataCollectionService {
     private final com.smms.user.repository.DataCollectionRequestRepository dcRequestRepo;
     private final DataCollectionRecipientRepository dcRecipientRepo;
     private final StudentProfileRepository studentRepo;
+    private final MentorProfileRepository mentorProfileRepo;
     private final ObjectMapper objectMapper;
 
     /**
@@ -92,5 +96,43 @@ public class DataCollectionService {
         int updated = dcRecipientRepo.markAsSubmitted(requestId, studentUserId);
         if (updated == 0)
             throw new RequestNotFoundException(requestId);
+    }
+
+    /** Student gets all data-collection tasks / surveys assigned to them. */
+    @Transactional(readOnly = true)
+    public List<StudentTaskResponse> getTasksForStudent(Long studentUserId) {
+        List<DataCollectionRecipient> recipients = dcRecipientRepo.findByStudentUserId(studentUserId);
+        List<StudentTaskResponse> results = new ArrayList<>();
+        for (DataCollectionRecipient r : recipients) {
+            dcRequestRepo.findById(r.getRequestId()).ifPresent(req -> {
+                String mentorName = "Faculty Mentor";
+                var mentorProfile = mentorProfileRepo.findByUserId(req.getMentorUserId());
+                if (mentorProfile.isPresent()) {
+                    mentorName = mentorProfile.get().getFullName();
+                }
+                String batch = "";
+                String dept = "";
+                try {
+                    var map = objectMapper.readValue(req.getFilterCriteria(), Map.class);
+                    if (map.get("batch") != null) batch = map.get("batch").toString();
+                    if (map.get("department") != null) dept = map.get("department").toString();
+                } catch (Exception ignored) {}
+
+                results.add(StudentTaskResponse.builder()
+                        .id(req.getId())
+                        .recipientId(r.getId())
+                        .mentorUserId(req.getMentorUserId())
+                        .creatorMentorName(mentorName)
+                        .title("Academic Questionnaire / Survey #" + req.getId())
+                        .description(req.getMessage())
+                        .batch(batch)
+                        .department(dept)
+                        .status(r.getStatus())
+                        .createdAt(req.getCreatedAt())
+                        .respondedAt(r.getRespondedAt())
+                        .build());
+            });
+        }
+        return results;
     }
 }

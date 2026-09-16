@@ -30,6 +30,10 @@ public class MeetingResponse {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
+    public String getTopic() {
+        return title != null ? title : description;
+    }
+
     public static MeetingResponse from(com.smms.meeting_service.domain.Meeting m) {
         return MeetingResponse.builder()
                 .id(m.getId()).allocationId(m.getAllocationId())

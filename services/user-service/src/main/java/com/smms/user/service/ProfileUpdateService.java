@@ -113,7 +113,7 @@ public class ProfileUpdateService {
 
     private String getFieldValue(StudentExtendedProfile ext, String fieldName) {
         try {
-            Field f = StudentExtendedProfile.class.getDeclaredField(camelCase(fieldName));
+            Field f = StudentExtendedProfile.class.getDeclaredField(normalizeFieldName(fieldName));
             f.setAccessible(true);
             Object val = f.get(ext);
             return val != null ? val.toString() : null;
@@ -122,12 +122,20 @@ public class ProfileUpdateService {
 
     private void setFieldValue(StudentExtendedProfile ext, String fieldName, String value) {
         try {
-            Field f = StudentExtendedProfile.class.getDeclaredField(camelCase(fieldName));
+            Field f = StudentExtendedProfile.class.getDeclaredField(normalizeFieldName(fieldName));
             f.setAccessible(true);
             f.set(ext, value);
         } catch (Exception e) {
             log.warn("Could not apply field update for field: {}", fieldName);
         }
+    }
+
+    private String normalizeFieldName(String name) {
+        String camel = camelCase(name);
+        if ("permanentAddress".equalsIgnoreCase(camel) || "permanent_address".equalsIgnoreCase(name)) {
+            return "residenceAddress";
+        }
+        return camel;
     }
 
     /** Converts snake_case to camelCase for reflection. */

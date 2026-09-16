@@ -14,6 +14,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -65,5 +66,16 @@ public class MentorProfileService {
         if (req.getMaxStudents() != null)   profile.setMaxStudents(req.getMaxStudents());
         if (req.getIsActive() != null)      profile.setIsActive(req.getIsActive());
         return MentorProfileResponse.from(mentorRepo.save(profile));
+    }
+
+    @Transactional(readOnly = true)
+    public List<com.smms.user.dto.response.MentorCapacityDto> getActiveMentorsWithCapacity() {
+        return mentorRepo.findByIsActiveTrue().stream().map(m -> com.smms.user.dto.response.MentorCapacityDto.builder()
+                .userId(m.getUserId())
+                .fullName(m.getFullName())
+                .department(m.getDepartment())
+                .specialization(m.getSpecialization())
+                .maxStudents(m.getMaxStudents())
+                .build()).collect(java.util.stream.Collectors.toList());
     }
 }

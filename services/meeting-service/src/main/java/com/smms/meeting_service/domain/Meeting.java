@@ -13,7 +13,7 @@ public class Meeting {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "allocation_id", nullable = false) private Long allocationId;
+    @Column(name = "allocation_id") private Long allocationId;
     @Column(name = "mentor_user_id", nullable = false) private Long mentorUserId;
     @Column(name = "student_user_id", nullable = false) private Long studentUserId;
 

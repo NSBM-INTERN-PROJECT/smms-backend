@@ -14,6 +14,7 @@ public interface DataCollectionRecipientRepository extends JpaRepository<DataCol
     List<DataCollectionRecipient> findByRequestId(Long requestId);
     Optional<DataCollectionRecipient> findByRequestIdAndStudentUserId(Long requestId, Long studentUserId);
     List<DataCollectionRecipient> findByStudentUserIdAndStatus(Long studentUserId, RecipientStatus status);
+    List<DataCollectionRecipient> findByStudentUserId(Long studentUserId);
 
     @Modifying
     @Query("UPDATE DataCollectionRecipient r SET r.status = 'SUBMITTED', r.respondedAt = CURRENT_TIMESTAMP WHERE r.requestId = :requestId AND r.studentUserId = :studentUserId")

@@ -10,5 +10,10 @@ public class MentorSummaryDto {
     private String email;
     private String department;
     private Integer maxStudents;
+    private Integer capacity;
     private String specialization;
+
+    public Integer getCapacity() {
+        return capacity != null ? capacity : maxStudents;
+    }
 }

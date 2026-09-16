@@ -12,5 +12,12 @@ public class AllocationDto {
     private String allocationType;  // MANUAL / RANDOM
     private String status;          // ACTIVE / INACTIVE / TRANSFERRED
     private LocalDate allocationDate;
+    private String studentName;
+    private String studentIdNumber;
+    private String mentorName;
+    private String batch;
+    private String department;
+    private LocalDateTime allocatedAt;
+    private LocalDateTime deactivatedAt;
     private LocalDateTime createdAt;
 }

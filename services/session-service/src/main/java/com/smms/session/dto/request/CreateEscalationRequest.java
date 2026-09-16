@@ -8,7 +8,7 @@ import lombok.Data;
 @Data
 public class CreateEscalationRequest {
 
-    @NotNull(message = "sessionNoteId is required")
+    /** Optional: session note ID if linked to a specific note. */
     private Long sessionNoteId;
 
     @NotNull(message = "studentUserId is required")

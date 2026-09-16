@@ -7,5 +7,7 @@ public enum EscalationCategory {
     FINANCIAL,
     ATTENDANCE,
     HEALTH,
+    DISCIPLINARY,
+    WELLBEING,
     OTHER
 }

@@ -94,6 +94,15 @@ public class SessionNoteService {
         return SessionNoteResponse.from(noteRepo.save(note));
     }
 
+    /** All session notes created by a mentor. */
+    @Transactional(readOnly = true)
+    public PagedResponse<SessionNoteResponse> getMentorNotes(Long mentorUserId, int page, int size) {
+        var pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+        return PagedResponse.from(
+                noteRepo.findByMentorUserIdOrderByCreatedAtDesc(mentorUserId, pageable),
+                SessionNoteResponse::from);
+    }
+
     /**
      * Builds a StudentProgressSummary for each student the mentor has notes for.
      * Uses the latest note per student + open escalation count.

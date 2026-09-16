@@ -56,6 +56,14 @@ public class MeetingController {
         return ResponseEntity.ok(slotService.cancelSlot(slotId, mentorUserId));
     }
 
+    @Operation(summary = "Get my pending slot invitations (Student)")
+    @GetMapping("/slots/student/me/invitations")
+    @PreAuthorize("hasRole('STUDENT')")
+    public ResponseEntity<List<SlotResponse>> getStudentSlotInvitations(
+            @RequestHeader("X-User-Id") Long studentUserId) {
+        return ResponseEntity.ok(slotService.getStudentSlotInvitations(studentUserId));
+    }
+
     @Operation(summary = "Student responds to a slot allocation (ACCEPTED / RESCHEDULE_REQUESTED)")
     @PutMapping("/slot-allocations/{id}/respond")
     @PreAuthorize("hasRole('STUDENT')")
@@ -64,6 +72,16 @@ public class MeetingController {
             @RequestHeader("X-User-Id") Long studentUserId,
             @Valid @RequestBody SlotResponseRequest req) {
         return ResponseEntity.ok(slotService.respondToSlot(id, studentUserId, req));
+    }
+
+    @Operation(summary = "Student responds to a slot by slotId (ACCEPTED / RESCHEDULE_REQUESTED)")
+    @PutMapping("/slots/{slotId}/respond")
+    @PreAuthorize("hasRole('STUDENT')")
+    public ResponseEntity<SlotAllocationResponse> respondToSlotBySlotId(
+            @PathVariable Long slotId,
+            @RequestHeader("X-User-Id") Long studentUserId,
+            @Valid @RequestBody SlotResponseRequest req) {
+        return ResponseEntity.ok(slotService.respondToSlot(slotId, studentUserId, req));
     }
 
     // ─── Meetings ────────────────────────────────────────────────────────────────
@@ -190,7 +208,7 @@ public class MeetingController {
     public ResponseEntity<MeetingResponse> approveRequest(
             @PathVariable Long id,
             @RequestHeader("X-User-Id") Long mentorUserId,
-            @RequestHeader("X-Allocation-Id") Long allocationId,
+            @RequestHeader(value = "X-Allocation-Id", required = false) Long allocationId,
             @Valid @RequestBody ReviewMeetingRequest review) {
         return ResponseEntity.ok(requestService.approve(id, mentorUserId, allocationId, review));
     }
