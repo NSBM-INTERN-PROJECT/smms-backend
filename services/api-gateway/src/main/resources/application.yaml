@@ -1,0 +1,123 @@
+server:
+  port: ${GATEWAY_PORT:8080}
+  
+spring:
+  application:
+    name: api-gateway
+
+  config:
+    import: optional:configserver:http://config-server:${CONFIG_PORT:8888}
+
+
+  cloud: 
+
+    config:
+      enabled: false  
+  
+    gateway:
+      # ─── CORS ──────────────────────────────────────────────
+      # Allow requests only from the Vercel frontend origin.
+      # In local dev: http://localhost:5173
+      # In production: https://your-app.vercel.app
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOriginPatterns:
+              - "http://localhost:*"
+              - "http://127.0.0.1:*"
+              - "https://*.vercel.app"
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - PATCH
+              - OPTIONS
+            allowedHeaders:
+              - "*"
+            allowCredentials: true
+            maxAge: 3600  
+            
+      # ─── ROUTES ────────────────────────────────────────────
+      # lb:// prefix = Spring Cloud LoadBalancer resolves the
+      # service name from Eureka and applies round-robin LB.
+      routes:
+
+        # Auth Service — public endpoints (no JWT required)
+        - id: auth-service
+          uri: lb://auth-service
+          predicates:
+            - Path=/api/v1/auth/**
+
+        # User Service — profiles, student forms, approval workflow
+        - id: user-service
+          uri: lb://user-service
+          predicates:
+            - Path=/api/v1/users/**
+
+        # Allocation Service — mentor-student assignments
+        - id: allocation-service
+          uri: lb://allocation-service
+          predicates:
+            - Path=/api/v1/allocations/**
+
+        # Meeting Service — slots, meetings, requests, notifications
+        - id: meeting-service
+          uri: lb://meeting-service
+          predicates:
+            - Path=/api/v1/meetings/**
+
+        # Session Service — session notes and escalations
+        - id: session-service-notes
+          uri: lb://session-service
+          predicates:
+            - Path=/api/v1/sessions/**
+        - id: session-service-escalations
+          uri: lb://session-service
+          predicates:
+            - Path=/api/v1/escalations/**
+
+        # Report Service — dashboards, exports
+        - id: report-service-dashboard
+          uri: lb://report-service
+          predicates:
+            - Path=/api/v1/dashboard/**
+        - id: report-service-reports
+          uri: lb://report-service
+          predicates:
+            - Path=/api/v1/reports/**
+
+# ─── JWT ─────────────────────────────────────────────────────
+# The gateway needs the JWT secret to validate tokens
+# WITHOUT calling the auth-service on every request (fast!).
+jwt:
+  secret: ${JWT_SECRET}
+
+eureka:
+  client:
+    registry-fetch-interval-seconds: 3
+    instance-info-replication-interval-seconds: 3
+    initial-instance-info-replication-interval-seconds: 2
+    service-url:
+      defaultZone: http://${EUREKA_USER:Admin}:${EUREKA_PASS:Admin123}@localhost:${DISCOVERY_PORT:8761}/eureka/
+  instance:
+    prefer-ip-address: true
+    lease-renewal-interval-in-seconds: 3
+    lease-expiration-duration-in-seconds: 10
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,gateway
+  endpoint:
+    health:
+      show-details: always
+    gateway:
+      enabled: true
+
+logging:
+  level:
+    org.springframework.cloud.gateway: INFO
+    com.smms.api_gateway: DEBUG
+    reactor.netty: WARN

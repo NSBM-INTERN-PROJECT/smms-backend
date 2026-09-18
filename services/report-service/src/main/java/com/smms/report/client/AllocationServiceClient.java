@@ -1,0 +1,29 @@
+package com.smms.report.client;
+
+import com.smms.report.client.dto.AllocationDto;
+import com.smms.report.client.dto.PagedResponseDto;
+import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
+
+import java.util.List;
+
+@FeignClient(name = "allocation-service")
+public interface AllocationServiceClient {
+
+    @GetMapping("/api/v1/allocations")
+    PagedResponseDto<AllocationDto> listAll(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "200") int size,
+            @RequestParam(required = false) String status);
+
+    @GetMapping("/api/v1/allocations/mentor/{mentorId}")
+    List<AllocationDto> getMentorAllocations(@PathVariable Long mentorId);
+
+    @GetMapping("/api/v1/allocations/student/{userId}")
+    AllocationDto getStudentMentor(@PathVariable Long userId);
+
+    @GetMapping("/api/v1/allocations/unallocated-students")
+    List<Long> getUnallocatedStudentIds();
+}
