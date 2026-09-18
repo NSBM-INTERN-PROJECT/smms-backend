@@ -10,13 +10,16 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import java.net.URI;
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/v1/sessions")
 @RequiredArgsConstructor
@@ -34,8 +37,13 @@ public class SessionController {
     public ResponseEntity<SessionNoteResponse> createNote(
             @RequestHeader("X-User-Id") Long mentorUserId,
             @Valid @RequestBody CreateSessionNoteRequest req) {
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(noteService.create(mentorUserId, req));
+        log.info("Creating session note by mentor ID: {}", mentorUserId);
+        SessionNoteResponse response = noteService.create(mentorUserId, req);
+        URI location = ServletUriComponentsBuilder.fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(response.getId())
+                .toUri();
+        return ResponseEntity.created(location).body(response);
     }
 
     @Operation(summary = "Get session note for a specific meeting")
@@ -66,7 +74,8 @@ public class SessionController {
     public ResponseEntity<SessionNoteResponse> updateNote(
             @PathVariable Long id,
             @RequestHeader("X-User-Id") Long mentorUserId,
-            @RequestBody UpdateSessionNoteRequest req) {
+            @Valid @RequestBody UpdateSessionNoteRequest req) {
+        log.info("Updating session note ID: {} by mentor ID: {}", id, mentorUserId);
         return ResponseEntity.ok(noteService.update(id, mentorUserId, req));
     }
 
@@ -86,8 +95,13 @@ public class SessionController {
     public ResponseEntity<EscalationResponse> createEscalation(
             @RequestHeader("X-User-Id") Long mentorUserId,
             @Valid @RequestBody CreateEscalationRequest req) {
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(escalationService.create(mentorUserId, req));
+        log.info("Creating escalation by mentor ID: {}", mentorUserId);
+        EscalationResponse response = escalationService.create(mentorUserId, req);
+        URI location = ServletUriComponentsBuilder.fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(response.getId())
+                .toUri();
+        return ResponseEntity.created(location).body(response);
     }
 
     @Operation(summary = "List all escalations with optional filters (Admin/Coordinator)")
@@ -122,11 +136,12 @@ public class SessionController {
     }
 
     @Operation(summary = "Update escalation status (Admin/Coordinator)")
-    @PutMapping("/escalations/{id}/status")
+    @PatchMapping("/escalations/{id}/status")
     @PreAuthorize("hasAnyRole('ADMIN','COORDINATOR')")
     public ResponseEntity<EscalationResponse> updateEscalationStatus(
             @PathVariable Long id,
             @Valid @RequestBody UpdateEscalationStatusRequest req) {
+        log.info("Updating status for escalation ID: {}", id);
         return ResponseEntity.ok(escalationService.updateStatus(id, req));
     }
 }
